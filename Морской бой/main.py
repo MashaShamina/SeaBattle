@@ -7,6 +7,7 @@ pygame.init()
 size = width, height = 1200, 800
 screen = pygame.display.set_mode(size)
 pygame.font.init()
+cell_size = 50
 FPS = 50
 lvl = 1
 time = 300
@@ -123,20 +124,18 @@ class Board:
         # значения по умолчанию
         self.left = 300
         self.top = 10
-        self.cell_size = 50
 
     # настройка внешнего вида
-    def set_view(self, left, top, cell_size):
+    def set_view(self, left, top):
         self.left = left
         self.top = top
-        self.cell_size = cell_size
 
     def render(self, screen):
         for y in range(self.height):
             for x in range(self.width):
                 pygame.draw.rect(screen, pygame.Color(255, 255, 255), (
-                    x * self.cell_size + self.left, y * self.cell_size + self.top, self.cell_size,
-                    self.cell_size), 1)
+                    x * cell_size + self.left, y * cell_size + self.top, cell_size,
+                    cell_size), 1)
 
 
 def picture_with_ships():
@@ -175,17 +174,80 @@ def level_time_points():
             screen.blit(q, (110, 70))
 
 
+class ShipsWithWater(pygame.sprite.Sprite):
+    def __init__(self, rectWithWater, *group):
+        super().__init__(*group)
+        self.rect = rectWithWater
+
+
 class Ships(pygame.sprite.Sprite):
     def __init__(self, size, *group):
         super().__init__(*group)
         self.size = size
-        x = random.randrange(9)
-        y = random.randrange(9)
-        self.rect = (x, y, 50, 50)
-        print(self.rect)
+        shipwater = pygame.sprite.Group()
+        #Сгенерим координаты корабля и буферной зоны
+        rectWithWaters = self.generateShip()
+        #Создаем корабль с буферной зоной, где нельзя ставить корабль
+        sh = ShipsWithWater(rectWithWaters, shipwater)
+        while pygame.sprite.spritecollideany(sh, ship_group):
+            print('yes')
+            print(self.x, self.y, self.size, self.direction, 1)
+            sh.kill()
+            shipwater.empty()
+            rectWithWaters = self.generateShip()
+            sh = ShipsWithWater(rectWithWaters, shipwater)
+        #правильные корабли, которые прошли проверку
+        self.add(ship_group)
+        print(self.x, self.y, self.size, self.direction, 2)
+
+    def generateShip(self):
+        self.x = random.randrange(10)
+        self.y = random.randrange(10)
+        self.direction = random.randrange(2)
+        #print(self.x, self.y, self.size, self.direction, 1)
+        if self.direction == 0:
+            if self.x + (self.size - 1) > 9:
+                self.x -= self.size - 1
+            self.rect = (cell_size * self.x, cell_size * self.y, cell_size * self.size, cell_size)
+            rectWithWater = pygame.Rect(cell_size * (self.x - 1), cell_size * (self.y - 1),
+                                  cell_size * (self.size + 2), cell_size * 3)
+        else:
+            if self.y + (self.size - 1) > 9:
+                self.y -= self.size - 1
+            self.rect = (cell_size * self.x, cell_size * self.y, cell_size * 3, cell_size * self.size)
+            rectWithWater = pygame.Rect(
+            cell_size * (self.x - 1), cell_size * (self.y - 1), cell_size,
+            cell_size  * (self.size + 2))
+        return rectWithWater
 
     def update(self):
         pass
+
+
+class Carrier(Ships):
+    def __init__(self, *group):
+        super().__init__(4, *group)
+
+
+class Submarine(Ships):
+    def __init__(self, *group):
+        super().__init__(3, *group)
+
+
+class Cruiser(Ships):
+    def __init__(self, *group):
+        super().__init__(3, *group)
+
+
+class Destroyer(Ships):
+    def __init__(self, *group):
+        super().__init__(2, *group)
+
+
+class Vedette(Ships):
+    for i in range(5):
+        def __init__(self, *group):
+            super().__init__(1, *group)
 
 
 if __name__ == '__main__':
@@ -196,9 +258,18 @@ if __name__ == '__main__':
     running = True
     screen.fill((0, 183, 217))
     change_time()
+    # группы спрайтов
     all_sprites = pygame.sprite.Group()
+    ship_group = pygame.sprite.Group()
+
     #Создадим четырёхпалубный корабль
-    Ships(4, all_sprites)
+    Carrier(all_sprites)
+    Submarine(all_sprites)
+    Cruiser(all_sprites)
+    for _ in range(3):
+        Destroyer(all_sprites)
+    for _ in range(4):
+        Vedette(all_sprites)
     while running:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
