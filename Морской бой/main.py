@@ -16,6 +16,9 @@ level = {1: "Начинающий",
          2: "Продолжающий",
          3: "Эксперт"}
 points = 0
+listofelementship = []
+listofships = []
+clickcoordinates = 0
 
 
 def load_image(name, colorkey=-1):
@@ -126,9 +129,9 @@ class Board:
         self.top = 10
 
     # настройка внешнего вида
-    def set_view(self, left, top):
-        self.left = left
-        self.top = top
+    #def set_view(self, left, top):
+        #self.left = left
+        #self.top = top
 
     def render(self, screen):
         for y in range(self.height):
@@ -136,6 +139,35 @@ class Board:
                 pygame.draw.rect(screen, pygame.Color(255, 255, 255), (
                     x * cell_size + self.left, y * cell_size + self.top, cell_size,
                     cell_size), 1)
+
+    def get_cell(self, mouse_pos):
+        for y in range(self.height):
+            for x in range(self.width):
+                if mouse_pos[0] < self.left or mouse_pos[1] < self.top or \
+                        mouse_pos[0] > self.left + self.width * cell_size or \
+                        mouse_pos[1] > self.top + self.height * cell_size:
+                    cell_coords = None
+                if x * cell_size + self.left <= mouse_pos[0] and \
+                        mouse_pos[0] <= x * cell_size + self.left + cell_size and \
+                        y * cell_size + self.top <= mouse_pos[1] and \
+                        mouse_pos[1] <= y * cell_size + self.top + cell_size:
+                    cell_coords = (x, y)
+                    break
+        return cell_coords
+
+    def on_click(self, cell_coords):
+        #print(cell_coords)
+        global clickcoordinates
+        clickcoordinates = cell_coords
+        print(clickcoordinates)
+
+    def get_click(self, mouse_pos):
+        cell = self.get_cell(mouse_pos)
+        self.on_click(cell)
+
+
+#def comparisonofcoordinates():
+    #for i in range()
 
 
 def picture_with_ships():
@@ -190,15 +222,23 @@ class Ships(pygame.sprite.Sprite):
         #Создаем корабль с буферной зоной, где нельзя ставить корабль
         sh = ShipsWithWater(rectWithWaters, shipwater)
         while pygame.sprite.spritecollideany(sh, ship_group):
-            print('yes')
-            print(self.x, self.y, self.size, self.direction, 1)
+            #print('yes')
+            #print(self.x, self.y, self.size, self.direction, 1)
             sh.kill()
             shipwater.empty()
             rectWithWaters = self.generateShip()
             sh = ShipsWithWater(rectWithWaters, shipwater)
         #правильные корабли, которые прошли проверку
         self.add(ship_group)
-        print(self.x, self.y, self.size, self.direction, 2)
+        #print(self.x, self.y, self.size, self.direction, 2)
+        for i in range(self.size):
+            listofelementship = []
+            if self.direction == 0:
+                listofelementship.append((self.x + i, self.y))
+            if self.direction == 1:
+                listofelementship.append((self.x, self.y + i))
+        listofships.append(listofelementship)
+        #print(listofships)
 
     def generateShip(self):
         self.x = random.randrange(10)
@@ -214,9 +254,9 @@ class Ships(pygame.sprite.Sprite):
         else:
             if self.y + (self.size - 1) > 9:
                 self.y -= self.size - 1
-            self.rect = (cell_size * self.x, cell_size * self.y, cell_size * 3, cell_size * self.size)
+            self.rect = (cell_size * self.x, cell_size * self.y, cell_size, cell_size * self.size)
             rectWithWater = pygame.Rect(
-            cell_size * (self.x - 1), cell_size * (self.y - 1), cell_size,
+            cell_size * (self.x - 1), cell_size * (self.y - 1), cell_size * 3,
             cell_size  * (self.size + 2))
         return rectWithWater
 
@@ -274,6 +314,8 @@ if __name__ == '__main__':
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                board.get_click(event.pos)
             if time > 0:
                 if event.type == pygame.USEREVENT + 1:
                     time -= 1
