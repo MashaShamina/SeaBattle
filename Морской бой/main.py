@@ -16,8 +16,6 @@ level = {1: "Начинающий",
          2: "Продолжающий",
          3: "Эксперт"}
 points = 0
-listofelementship = []
-listofships = []
 clickcoordinates = 0
 
 
@@ -129,9 +127,9 @@ class Board:
         self.top = 10
 
     # настройка внешнего вида
-    #def set_view(self, left, top):
-        #self.left = left
-        #self.top = top
+    def set_view(self, left, top):
+        self.left = left
+        self.top = top
 
     def render(self, screen):
         for y in range(self.height):
@@ -139,6 +137,18 @@ class Board:
                 pygame.draw.rect(screen, pygame.Color(255, 255, 255), (
                     x * cell_size + self.left, y * cell_size + self.top, cell_size,
                     cell_size), 1)
+                if self.board[y][x] == 2:
+                    pygame.draw.line(screen, ('red'), (x * cell_size + self.left, y * cell_size + self.top),
+                                     (x * cell_size + self.left + cell_size, y * cell_size + self.top + cell_size), width=5)
+                    pygame.draw.line(screen, ('red'), (x * cell_size + self.left + cell_size, y * cell_size + self.top),
+                                     (x * cell_size + self.left, y * cell_size + self.top + cell_size), width=5)
+                elif self.board[y][x] == 1:
+                    pygame.draw.circle(screen, ('white'), (x * cell_size + self.left + cell_size / 2, y * cell_size + self.top + cell_size / 2),
+                                       5, width=5)
+                else:
+                    pygame.draw.rect(screen, ('white'), (
+                        x * cell_size + self.left, y * cell_size + self.top, cell_size,
+                        cell_size), 1)
 
     def get_cell(self, mouse_pos):
         for y in range(self.height):
@@ -152,22 +162,24 @@ class Board:
                         y * cell_size + self.top <= mouse_pos[1] and \
                         mouse_pos[1] <= y * cell_size + self.top + cell_size:
                     cell_coords = (x, y)
+                    # rect = pygame.Rect(x * cell_size + self.left, y * cell_size + self.top, cell_size, cell_size)
+                    # clickcoordinate.add(rect)
                     break
         return cell_coords
 
-    def on_click(self, cell_coords):
-        #print(cell_coords)
+    def on_click(self, cell_coords, state):
+        # print(cell_coords)
         global clickcoordinates
         clickcoordinates = cell_coords
-        print(clickcoordinates)
+        for i in range(self.height):
+            for j in range(self.width):
+                if j == cell_coords[0] and i == cell_coords[1] and state > self.board[i][j]:
+                    self.board[i][j] = state
+        print(self.board)
 
-    def get_click(self, mouse_pos):
+    def get_click(self, mouse_pos, state):
         cell = self.get_cell(mouse_pos)
-        self.on_click(cell)
-
-
-#def comparisonofcoordinates():
-    #for i in range()
+        self.on_click(cell, state)
 
 
 def picture_with_ships():
@@ -217,51 +229,50 @@ class Ships(pygame.sprite.Sprite):
         super().__init__(*group)
         self.size = size
         shipwater = pygame.sprite.Group()
-        #Сгенерим координаты корабля и буферной зоны
+        # Сгенерим координаты корабля и буферной зоны
         rectWithWaters = self.generateShip()
-        #Создаем корабль с буферной зоной, где нельзя ставить корабль
+        # Создаем корабль с буферной зоной, где нельзя ставить корабль
         sh = ShipsWithWater(rectWithWaters, shipwater)
         while pygame.sprite.spritecollideany(sh, ship_group):
-            #print('yes')
-            #print(self.x, self.y, self.size, self.direction, 1)
             sh.kill()
             shipwater.empty()
             rectWithWaters = self.generateShip()
             sh = ShipsWithWater(rectWithWaters, shipwater)
-        #правильные корабли, которые прошли проверку
+        # правильные корабли, которые прошли проверку
         self.add(ship_group)
-        #print(self.x, self.y, self.size, self.direction, 2)
-        for i in range(self.size):
-            listofelementship = []
-            if self.direction == 0:
-                listofelementship.append((self.x + i, self.y))
-            if self.direction == 1:
-                listofelementship.append((self.x, self.y + i))
-        listofships.append(listofelementship)
-        #print(listofships)
+        print(self.x, self.y, self.size, self.direction)
 
     def generateShip(self):
         self.x = random.randrange(10)
         self.y = random.randrange(10)
         self.direction = random.randrange(2)
-        #print(self.x, self.y, self.size, self.direction, 1)
         if self.direction == 0:
             if self.x + (self.size - 1) > 9:
                 self.x -= self.size - 1
-            self.rect = (cell_size * self.x, cell_size * self.y, cell_size * self.size, cell_size)
+            self.rect = pygame.Rect(cell_size * self.x, cell_size * self.y, cell_size * self.size, cell_size)
             rectWithWater = pygame.Rect(cell_size * (self.x - 1), cell_size * (self.y - 1),
-                                  cell_size * (self.size + 2), cell_size * 3)
+                                        cell_size * (self.size + 2), cell_size * 3)
         else:
             if self.y + (self.size - 1) > 9:
                 self.y -= self.size - 1
-            self.rect = (cell_size * self.x, cell_size * self.y, cell_size, cell_size * self.size)
+            self.rect = pygame.Rect(cell_size * self.x, cell_size * self.y, cell_size, cell_size * self.size)
             rectWithWater = pygame.Rect(
-            cell_size * (self.x - 1), cell_size * (self.y - 1), cell_size * 3,
-            cell_size  * (self.size + 2))
+                cell_size * (self.x - 1), cell_size * (self.y - 1), cell_size * 3,
+                cell_size * (self.size + 2))
         return rectWithWater
 
-    def update(self):
-        pass
+    def update(self, *args):
+        if args and args[0].type == pygame.MOUSEBUTTONDOWN:
+            # В переменную b передаём кортеж с координатой нажатия, чтобы в переменной a "привести к общему языку" /
+            # координаты для удобства работы
+            b = args[0].pos
+            a = (b[0] - 300, b[1] - 10)
+            if self.rect.collidepoint(a):
+                board.get_click(b, 2)
+                global points
+                points += 1
+            else:
+                board.get_click(b, 1)
 
 
 class Carrier(Ships):
@@ -301,8 +312,9 @@ if __name__ == '__main__':
     # группы спрайтов
     all_sprites = pygame.sprite.Group()
     ship_group = pygame.sprite.Group()
+    clickcoordinate = pygame.sprite.Group()
 
-    #Создадим четырёхпалубный корабль
+    # Создадим четырёхпалубный корабль
     Carrier(all_sprites)
     Submarine(all_sprites)
     Cruiser(all_sprites)
@@ -314,8 +326,8 @@ if __name__ == '__main__':
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
-            if event.type == pygame.MOUSEBUTTONDOWN:
-                board.get_click(event.pos)
+            # if event.type == pygame.MOUSEBUTTONDOWN:
+            #    board.get_click(event.pos)
             if time > 0:
                 if event.type == pygame.USEREVENT + 1:
                     time -= 1
@@ -327,5 +339,6 @@ if __name__ == '__main__':
             board.render(screen)
             regulations()
             picture_with_ships()
-        pygame.display.flip()
+            ship_group.update(event)
+            pygame.display.flip()
     pygame.quit()
