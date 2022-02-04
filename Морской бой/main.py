@@ -146,7 +146,7 @@ class Board:
                                      (x * cell_size + self.left, y * cell_size + self.top + cell_size), width=5)
                 elif self.board[y][x] == 1:
                     pygame.draw.circle(screen, ('white'), (
-                    x * cell_size + self.left + cell_size / 2, y * cell_size + self.top + cell_size / 2),
+                        x * cell_size + self.left + cell_size / 2, y * cell_size + self.top + cell_size / 2),
                                        5, width=5)
                 else:
                     pygame.draw.rect(screen, ('white'), (
@@ -304,6 +304,11 @@ class Vedette(Ships):
             super().__init__(1, *group)
 
 
+def result():
+    f = open('result.txt', 'w')
+    f.write('Ваш уровень: ' + level[lvl] + ' ' + 'Ваши очки: ' + str(points))
+
+
 if __name__ == '__main__':
     pygame.display.set_caption('Морской бой')
     clock = pygame.time.Clock()
@@ -339,6 +344,7 @@ if __name__ == '__main__':
             if points == 20:
                 game_status = 2
                 points += time
+                time = 1000000000000000
             if game_status == 0:
                 screen.fill((0, 183, 217))
                 level_time_points()
@@ -369,7 +375,8 @@ if __name__ == '__main__':
                 font = pygame.font.Font(None, 150)
                 q = font.render('Ваши очки: ' + str(points), 1, pygame.Color('white'))
                 screen.blit(text, (text_x, text_y - 150))
-                screen.blit(q, (text_x + 50, 400))
+                screen.blit(q, (text_x + 50, 360))
+                result()
             ship_group.update(event)
             pygame.display.flip()
     pygame.quit()
