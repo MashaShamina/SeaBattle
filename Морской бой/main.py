@@ -17,6 +17,7 @@ level = {1: "Начинающий",
          3: "Эксперт"}
 points = 0
 clickcoordinates = 0
+game_status = 0
 
 
 def load_image(name, colorkey=-1):
@@ -96,7 +97,7 @@ def regulations():
                   "очков за определённое время,",
                   "которое зависит от вашего уровня",
                   "На начинающем уровне - 5 минут,",
-                  "на продолжающем - 3 минуты, на",
+                  "на продолжающем - 2,5 минуты, на",
                   "эксперте - минута. По умолчанию",
                   "стоит начинающий уровень. За",
                   "корабль, состоящий из 4 клеток,",
@@ -139,11 +140,13 @@ class Board:
                     cell_size), 1)
                 if self.board[y][x] == 2:
                     pygame.draw.line(screen, ('red'), (x * cell_size + self.left, y * cell_size + self.top),
-                                     (x * cell_size + self.left + cell_size, y * cell_size + self.top + cell_size), width=5)
+                                     (x * cell_size + self.left + cell_size, y * cell_size + self.top + cell_size),
+                                     width=5)
                     pygame.draw.line(screen, ('red'), (x * cell_size + self.left + cell_size, y * cell_size + self.top),
                                      (x * cell_size + self.left, y * cell_size + self.top + cell_size), width=5)
                 elif self.board[y][x] == 1:
-                    pygame.draw.circle(screen, ('white'), (x * cell_size + self.left + cell_size / 2, y * cell_size + self.top + cell_size / 2),
+                    pygame.draw.circle(screen, ('white'), (
+                    x * cell_size + self.left + cell_size / 2, y * cell_size + self.top + cell_size / 2),
                                        5, width=5)
                 else:
                     pygame.draw.rect(screen, ('white'), (
@@ -171,11 +174,11 @@ class Board:
         # print(cell_coords)
         global clickcoordinates
         clickcoordinates = cell_coords
-        for i in range(self.height):
-            for j in range(self.width):
-                if j == cell_coords[0] and i == cell_coords[1] and state > self.board[i][j]:
-                    self.board[i][j] = state
-        print(self.board)
+        if cell_coords != None:
+            for i in range(self.height):
+                for j in range(self.width):
+                    if j == cell_coords[0] and i == cell_coords[1] and state > self.board[i][j]:
+                        self.board[i][j] = state
 
     def get_click(self, mouse_pos, state):
         cell = self.get_cell(mouse_pos)
@@ -190,7 +193,7 @@ def picture_with_ships():
 def change_time():
     global time
     if lvl == 2:
-        time = 180
+        time = 150
     if lvl == 3:
         time = 60
 
@@ -332,13 +335,41 @@ if __name__ == '__main__':
                 if event.type == pygame.USEREVENT + 1:
                     time -= 1
             else:
-                print("GAME OVER")
-                running = False
-            screen.fill((0, 183, 217))
-            level_time_points()
-            board.render(screen)
-            regulations()
-            picture_with_ships()
+                game_status = 1
+            if points == 20:
+                game_status = 2
+                points += time
+            if game_status == 0:
+                screen.fill((0, 183, 217))
+                level_time_points()
+                board.render(screen)
+                regulations()
+                picture_with_ships()
+            elif game_status == 1:
+                screen.fill((0, 0, 0))
+                pygame.draw.line(screen, ('red'), (0, 0), (width, height), width=5)
+                pygame.draw.line(screen, ('red'), (width, 0), (0, height), width=5)
+                font = pygame.font.Font(None, 250)
+                text = font.render("GAME OVER", True, ('red'))
+                text_x = width // 2 - text.get_width() // 2
+                text_y = height // 2 - text.get_height() // 2
+                text_w = text.get_width()
+                text_h = text.get_height()
+                screen.blit(text, (text_x, text_y))
+                pygame.draw.rect(screen, ('red'), (text_x - 10, text_y - 10,
+                                                   text_w + 20, text_h + 20), 1)
+            else:
+                screen.fill((0, 183, 217))
+                font = pygame.font.Font(None, 250)
+                text = font.render("YOU WIN!", True, ('white'))
+                text_x = width // 2 - text.get_width() // 2
+                text_y = height // 2 - text.get_height() // 2
+                text_w = text.get_width()
+                text_h = text.get_height()
+                font = pygame.font.Font(None, 150)
+                q = font.render('Ваши очки: ' + str(points), 1, pygame.Color('white'))
+                screen.blit(text, (text_x, text_y - 150))
+                screen.blit(q, (text_x + 50, 400))
             ship_group.update(event)
             pygame.display.flip()
     pygame.quit()
