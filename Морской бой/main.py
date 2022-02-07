@@ -18,6 +18,12 @@ level = {1: "Начинающий",
 points = 0
 clickcoordinates = 0
 game_status = 0
+running = True
+clock = pygame.time.Clock()
+# группы спрайтов
+all_sprites = pygame.sprite.Group()
+ship_group = pygame.sprite.Group()
+clickcoordinate = pygame.sprite.Group()
 
 
 def load_image(name, colorkey=-1):
@@ -71,19 +77,20 @@ def start_screen():
     fon = pygame.transform.scale(load_image('Морской бой.jpg'), (width, height))
     screen.blit(fon, (0, 0))
     font = pygame.font.Font(None, 30)
-    all_sprites = pygame.sprite.Group()
-    pic1 = Pictures(100, 650, 1, all_sprites)
-    pic2 = Pictures(500, 650, 2, all_sprites)
-    pic3 = Pictures(900, 650, 3, all_sprites)
+    allsprites = pygame.sprite.Group()
+    pic1 = Pictures(100, 650, 1, allsprites)
+    pic2 = Pictures(500, 650, 2, allsprites)
+    pic3 = Pictures(900, 650, 3, allsprites)
 
     while True:
-        all_sprites.draw(screen)
+        allsprites.draw(screen)
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 terminate()
             elif event.type == pygame.KEYDOWN or \
                     event.type == pygame.MOUSEBUTTONDOWN:
-                all_sprites.update(event)
+                allsprites.update(event)
+                print("Старт!!!")
                 return  # начинаем игру
         pygame.display.flip()
         clock.tick(FPS)
@@ -192,6 +199,8 @@ def picture_with_ships():
 
 def change_time():
     global time
+    if lvl == 1:
+        time = 300
     if lvl == 2:
         time = 150
     if lvl == 3:
@@ -308,20 +317,16 @@ def result():
     f = open('result.txt', 'w')
     f.write('Ваш уровень: ' + level[lvl] + ' ' + 'Ваши очки: ' + str(points))
 
-
-if __name__ == '__main__':
+def initT():
     pygame.display.set_caption('Морской бой')
-    clock = pygame.time.Clock()
     start_screen()
-    board = Board(10, 10)
+    global running
     running = True
     screen.fill((0, 183, 217))
     change_time()
-    # группы спрайтов
-    all_sprites = pygame.sprite.Group()
-    ship_group = pygame.sprite.Group()
-    clickcoordinate = pygame.sprite.Group()
-
+    all_sprites.empty()
+    ship_group.empty()
+    clickcoordinate.empty()
     # Создадим четырёхпалубный корабль
     Carrier(all_sprites)
     Submarine(all_sprites)
@@ -330,6 +335,16 @@ if __name__ == '__main__':
         Destroyer(all_sprites)
     for _ in range(4):
         Vedette(all_sprites)
+    global game_status
+    game_status = 0
+    global points
+    points = 0
+    print(game_status)
+    print(running)
+
+if __name__ == '__main__':
+    initT()
+    board = Board(10, 10)
     while running:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -341,6 +356,7 @@ if __name__ == '__main__':
                     time -= 1
             else:
                 game_status = 1
+                time = 1000000000000000
             if points == 20:
                 game_status = 2
                 points += time
@@ -364,7 +380,10 @@ if __name__ == '__main__':
                 screen.blit(text, (text_x, text_y))
                 pygame.draw.rect(screen, ('red'), (text_x - 10, text_y - 10,
                                                    text_w + 20, text_h + 20), 1)
-            else:
+                print(game_status)
+                game_status = -1
+                print(game_status)
+            elif game_status == 2:
                 screen.fill((0, 183, 217))
                 font = pygame.font.Font(None, 250)
                 text = font.render("YOU WIN!", True, ('white'))
@@ -377,6 +396,13 @@ if __name__ == '__main__':
                 screen.blit(text, (text_x, text_y - 150))
                 screen.blit(q, (text_x + 50, 360))
                 result()
+                game_status = -1
+            elif game_status == -1:
+                print("init")
+                initT()
+                board = Board(10, 10)
+                print(game_status)
+                print(running)
             ship_group.update(event)
             pygame.display.flip()
     pygame.quit()
