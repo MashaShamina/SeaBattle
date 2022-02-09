@@ -115,7 +115,7 @@ def regulations():
     font = pygame.font.Font(None, 30)
     text_coord = 0
     for line in intro_text:
-        string_rendered = font.render(line, 1, pygame.Color('white'))
+        string_rendered = font.render(line, True, pygame.Color('white'))
         intro_rect = string_rendered.get_rect()
         text_coord += 10
         intro_rect.top = text_coord
@@ -146,17 +146,17 @@ class Board:
                     x * cell_size + self.left, y * cell_size + self.top, cell_size,
                     cell_size), 1)
                 if self.board[y][x] == 2:
-                    pygame.draw.line(screen, ('red'), (x * cell_size + self.left, y * cell_size + self.top),
+                    pygame.draw.line(screen, 'red', (x * cell_size + self.left, y * cell_size + self.top),
                                      (x * cell_size + self.left + cell_size, y * cell_size + self.top + cell_size),
                                      width=5)
-                    pygame.draw.line(screen, ('red'), (x * cell_size + self.left + cell_size, y * cell_size + self.top),
+                    pygame.draw.line(screen, 'red', (x * cell_size + self.left + cell_size, y * cell_size + self.top),
                                      (x * cell_size + self.left, y * cell_size + self.top + cell_size), width=5)
                 elif self.board[y][x] == 1:
-                    pygame.draw.circle(screen, ('white'), (
+                    pygame.draw.circle(screen, 'white', (
                         x * cell_size + self.left + cell_size / 2, y * cell_size + self.top + cell_size / 2),
                                        5, width=5)
                 else:
-                    pygame.draw.rect(screen, ('white'), (
+                    pygame.draw.rect(screen, 'white', (
                         x * cell_size + self.left, y * cell_size + self.top, cell_size,
                         cell_size), 1)
 
@@ -178,10 +178,9 @@ class Board:
         return cell_coords
 
     def on_click(self, cell_coords, state):
-        # print(cell_coords)
         global clickcoordinates
         clickcoordinates = cell_coords
-        if cell_coords != None:
+        if cell_coords is not None:
             for i in range(self.height):
                 for j in range(self.width):
                     if j == cell_coords[0] and i == cell_coords[1] and state > self.board[i][j]:
@@ -212,7 +211,7 @@ def level_time_points():
     font = pygame.font.Font(None, 30)
     text_coord = 0
     for line in intro_text:
-        string_rendered = font.render(line, 1, pygame.Color('white'))
+        string_rendered = font.render(line, True, pygame.Color('white'))
         intro_rect = string_rendered.get_rect()
         text_coord += 10
         intro_rect.top = text_coord
@@ -220,13 +219,13 @@ def level_time_points():
         text_coord += intro_rect.height
         screen.blit(string_rendered, intro_rect)
         if line == "Уровень:":
-            q = font.render(level[lvl], 1, pygame.Color('white'))
+            q = font.render(level[lvl], True, pygame.Color('white'))
             screen.blit(q, (110, 10))
         if line == "Время:":
-            q = font.render(str(time), 1, pygame.Color('white'))
+            q = font.render(str(time), True, pygame.Color('white'))
             screen.blit(q, (110, 40))
         if line == "Очки:":
-            q = font.render(str(points), 1, pygame.Color('white'))
+            q = font.render(str(points), True, pygame.Color('white'))
             screen.blit(q, (110, 70))
 
 
@@ -277,14 +276,14 @@ class Ships(pygame.sprite.Sprite):
         if args and args[0].type == pygame.MOUSEBUTTONDOWN:
             # В переменную b передаём кортеж с координатой нажатия, чтобы в переменной a "привести к общему языку" /
             # координаты для удобства работы
-            b = args[0].pos
-            a = (b[0] - 300, b[1] - 10)
-            if self.rect.collidepoint(a):
-                board.get_click(b, 2)
+            d = args[0].pos
+            q = (d[0] - 300, d[1] - 10)
+            if self.rect.collidepoint(q):
+                board.get_click(d, 2)
                 global points
                 points += 1
             else:
-                board.get_click(b, 1)
+                board.get_click(d, 1)
 
 
 class Carrier(Ships):
@@ -317,6 +316,7 @@ def result():
     f = open('result.txt', 'w')
     f.write('Ваш уровень: ' + level[lvl] + ' ' + 'Ваши очки: ' + str(points))
 
+
 def initT():
     pygame.display.set_caption('Морской бой')
     start_screen()
@@ -342,6 +342,7 @@ def initT():
     print(game_status)
     print(running)
 
+
 if __name__ == '__main__':
     initT()
     board = Board(10, 10)
@@ -349,8 +350,6 @@ if __name__ == '__main__':
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
-            # if event.type == pygame.MOUSEBUTTONDOWN:
-            #    board.get_click(event.pos)
             if time > 0:
                 if event.type == pygame.USEREVENT + 1:
                     time -= 1
@@ -369,40 +368,52 @@ if __name__ == '__main__':
                 picture_with_ships()
             elif game_status == 1:
                 screen.fill((0, 0, 0))
-                pygame.draw.line(screen, ('red'), (0, 0), (width, height), width=5)
-                pygame.draw.line(screen, ('red'), (width, 0), (0, height), width=5)
+                pygame.draw.line(screen, 'red', (0, 0), (width, height), width=5)
+                pygame.draw.line(screen, 'red', (width, 0), (0, height), width=5)
                 font = pygame.font.Font(None, 250)
-                text = font.render("GAME OVER", True, ('red'))
+                text = font.render("GAME OVER", True, 'red')
                 text_x = width // 2 - text.get_width() // 2
                 text_y = height // 2 - text.get_height() // 2
                 text_w = text.get_width()
                 text_h = text.get_height()
                 screen.blit(text, (text_x, text_y))
-                pygame.draw.rect(screen, ('red'), (text_x - 10, text_y - 10,
-                                                   text_w + 20, text_h + 20), 1)
-                print(game_status)
-                game_status = -1
-                print(game_status)
+                pygame.draw.rect(screen, 'red', (text_x - 10, text_y - 10,
+                                                 text_w + 20, text_h + 20), 1)
+                pygame.draw.rect(screen, (255, 0, 0), (350, 520, 520, 160), 0)
+                font1 = pygame.font.Font(None, 80)
+                b = font1.render("НАЧАТЬ СНАЧАЛА", True, 'white')
+                screen.blit(b, (350, 570))
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    x, y = event.pos
+                    if x >= 350 and x <= 870 and y >= 520 and y <= 680:
+                        game_status = -1
             elif game_status == 2:
                 screen.fill((0, 183, 217))
                 font = pygame.font.Font(None, 250)
-                text = font.render("YOU WIN!", True, ('white'))
+                text = font.render("YOU WIN!", True, 'white')
                 text_x = width // 2 - text.get_width() // 2
                 text_y = height // 2 - text.get_height() // 2
                 text_w = text.get_width()
                 text_h = text.get_height()
                 font = pygame.font.Font(None, 150)
-                q = font.render('Ваши очки: ' + str(points), 1, pygame.Color('white'))
+                q = font.render('Ваши очки: ' + str(points), True, pygame.Color('white'))
                 screen.blit(text, (text_x, text_y - 150))
                 screen.blit(q, (text_x + 50, 360))
+                font1 = pygame.font.Font(None, 50)
+                a = font1.render("Ваш результат сохранился в txt файл", True, 'white')
+                screen.blit(a, (text_x + 100, 460))
                 result()
-                game_status = -1
+                pygame.draw.rect(screen, (255, 0, 0), (350, 520, 520, 160), 0)
+                font1 = pygame.font.Font(None, 80)
+                b = font1.render("НАЧАТЬ СНАЧАЛА", True, 'white')
+                screen.blit(b, (350, 570))
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    x, y = event.pos
+                    if x >= 350 and x <= 870 and y >= 520 and y <= 680:
+                        game_status = -1
             elif game_status == -1:
-                print("init")
                 initT()
                 board = Board(10, 10)
-                print(game_status)
-                print(running)
             ship_group.update(event)
             pygame.display.flip()
     pygame.quit()
